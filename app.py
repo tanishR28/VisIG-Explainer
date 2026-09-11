@@ -1,4 +1,5 @@
 import io
+import os
 from pathlib import Path
 
 import gradio as gr
@@ -63,6 +64,9 @@ MODEL = None
 PREPROCESS = None
 CATEGORIES = None
 IG = None
+
+# Hugging Face Spaces set SPACE_ID at runtime. Skip heavy startup jobs there.
+IS_HF_SPACE = os.getenv("SPACE_ID") is not None
 
 
 # -----------------------------------------------------------------------------
@@ -1138,11 +1142,13 @@ def build_ui():
                     outputs=[results_table, results_status],
                 )
 
-        demo.load(
-            on_refresh_results,
-            inputs=[],
-            outputs=[results_table, results_status],
-        )
+        # Avoid 30 IG runs on Space startup; user clicks Refresh instead.
+        if not IS_HF_SPACE:
+            demo.load(
+                on_refresh_results,
+                inputs=[],
+                outputs=[results_table, results_status],
+            )
 
     return demo
 

@@ -1,3 +1,15 @@
+---
+title: VisIG Explainer
+emoji: 🔍
+colorFrom: blue
+colorTo: purple
+sdk: gradio
+app_file: app.py
+pinned: false
+license: mit
+short_description: ResNet18 + Integrated Gradients image attribution demo
+---
+
 # VisIG Explainer
 
 **Interactive image classification and pixel-level attribution for ImageNet using ResNet18 and Captum Integrated Gradients.**
