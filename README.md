@@ -16,9 +16,6 @@ short_description: ResNet18 + Integrated Gradients image attribution demo
 
 VisIG Explainer is a Gradio web app that classifies uploaded images with a pretrained ResNet18 model and visualizes *why* the model made its prediction using Integrated Gradients (IG). Compare black, gray, and white baselines, tune integration steps (`n_steps`), inspect convergence delta, and explore bundled good and challenging test cases.
 
-> **Suggested GitHub repo name:** `visig-explainer`
-
----
 
 ## Features
 
@@ -130,21 +127,6 @@ Attribution map → heatmap + overlay
 Gradio UI
 ```
 
----
-
-## Key concepts (viva)
-
-| Term | Meaning |
-|------|---------|
-| **Baseline** | Reference input IG integrates from (black / gray / white) |
-| **`n_steps`** | Interpolation points in the IG Riemann sum |
-| **Delta** | Captum completeness / convergence error |
-| **Input features** | Image pixels — not `n_steps` or delta |
-| **Attribution map** | Per-pixel contribution toward the predicted class |
-
-Try `n_steps = 10, 50, 100, 200` on the same image and compare delta and heatmaps.
-
----
 
 ## Deploy on Hugging Face Spaces
 
