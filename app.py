@@ -2,6 +2,7 @@ import io
 import os
 from pathlib import Path
 
+import spaces  # ZeroGPU: must be imported before torch
 import gradio as gr
 import matplotlib.pyplot as plt
 import numpy as np
@@ -67,6 +68,12 @@ IG = None
 
 # Hugging Face Spaces set SPACE_ID at runtime. Skip heavy startup jobs there.
 IS_HF_SPACE = os.getenv("SPACE_ID") is not None
+USE_CUDA = torch.cuda.is_available() or os.getenv("SPACES_ZERO_GPU") == "1"
+
+
+def model_device():
+    """Use CUDA on ZeroGPU Spaces and when a local GPU is available."""
+    return torch.device("cuda" if USE_CUDA else "cpu")
 
 
 # -----------------------------------------------------------------------------
@@ -84,6 +91,8 @@ def load_model():
     weights = ResNet18_Weights.DEFAULT
     model = resnet18(weights=weights)
     model.eval()
+    # ZeroGPU requires models on CUDA at module scope for GPU worker streaming.
+    model = model.to(model_device())
 
     MODEL = model
     PREPROCESS = weights.transforms()
@@ -106,8 +115,9 @@ def predict_image(image, top_k=5):
     and top-k predictions as (label, confidence_pct) tuples.
     """
     model, preprocess, categories, _ = load_model()
+    device = model_device()
 
-    input_tensor = preprocess(image).unsqueeze(0)
+    input_tensor = preprocess(image).unsqueeze(0).to(device)
 
     with torch.no_grad():
         output = model(input_tensor)
@@ -163,7 +173,7 @@ def create_baseline(image, baseline_type):
 
     color = BASELINE_COLORS[baseline_key]
     baseline_image = Image.new("RGB", image.size, color)
-    baseline = preprocess(baseline_image).unsqueeze(0)
+    baseline = preprocess(baseline_image).unsqueeze(0).to(model_device())
     return baseline
 
 
@@ -711,8 +721,9 @@ def on_blur_controls(image, blur_input, blur_radius):
 # -----------------------------------------------------------------------------
 
 
+@spaces.GPU(duration=180)
 def on_explain(image, baseline, blur_input, blur_radius, n_steps):
-    """Handle Explain / Classify button click."""
+    """Handle Explain / Classify button click (GPU on Hugging Face ZeroGPU)."""
     empty_preview = (gr.update(visible=False), None, None, "")
 
     if image is None:
@@ -765,8 +776,9 @@ def on_explain(image, baseline, blur_input, blur_radius, n_steps):
     )
 
 
+@spaces.GPU(duration=240)
 def on_compare_baselines(image):
-    """Handle baseline comparison request."""
+    """Handle baseline comparison request (GPU on Hugging Face ZeroGPU)."""
     if image is None:
         return None, "Please upload an image to compare baselines."
 
@@ -774,8 +786,9 @@ def on_compare_baselines(image):
     return result["panel"], result["comparison_text"]
 
 
+@spaces.GPU(duration=900)
 def on_refresh_results():
-    """Rebuild the experiment results table."""
+    """Rebuild the experiment results table (GPU on Hugging Face ZeroGPU)."""
     if not test_images_available():
         return (
             [],
@@ -1153,6 +1166,7 @@ def build_ui():
     return demo
 
 
+demo = build_ui()
+
 if __name__ == "__main__":
-    demo = build_ui()
     demo.launch()
