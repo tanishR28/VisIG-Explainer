@@ -1,44 +1,54 @@
-# Experiment 5: ResNet18 + Integrated Gradients
+# VisIG Explainer
 
-Interactive Explainable AI demo for image classification and attribution using **pretrained ResNet18 (ImageNet-1K)** and **Captum Integrated Gradients**.
+**Interactive image classification and pixel-level attribution for ImageNet using ResNet18 and Captum Integrated Gradients.**
 
-Built for an Explainable AI course project with a Gradio UI, baseline comparison, convergence delta reporting, and bundled test images.
+VisIG Explainer is a Gradio web app that classifies uploaded images with a pretrained ResNet18 model and visualizes *why* the model made its prediction using Integrated Gradients (IG). Compare black, gray, and white baselines, tune integration steps (`n_steps`), inspect convergence delta, and explore bundled good and challenging test cases.
+
+> **Suggested GitHub repo name:** `visig-explainer`
+
+---
 
 ## Features
 
-- Upload any compatible image (JPG/PNG)
-- **ResNet18** inference with top-5 predictions and confidence
-- **Integrated Gradients** explanations with Captum
-- **Baselines:** black, gray, and white RGB references
-- **`n_steps` control** (10–200) with **convergence delta** display
-- Optional **input image blur** before model preprocessing
-- Side-by-side **heatmap** and **overlay** visualizations
-- **Baseline comparison** tab (black vs gray vs white)
+- Upload any compatible image (JPG / PNG / WEBP)
+- **ResNet18 (ImageNet-1K)** inference with **top-5** predictions and confidence
+- **Captum Integrated Gradients** with configurable **`n_steps`** (10–200)
+- **Convergence delta** reporting (`return_convergence_delta=True`)
+- **Baselines:** black, gray, and white RGB reference inputs
+- Optional **input image blur** before preprocessing (live preview)
+- **Heatmap** and **overlay** visualizations
+- **Baseline comparison** tab with correlation analysis
 - Bundled **Good Cases** and **Challenging Cases** test images
-- Course notes and experiment results table in the UI
+- In-app course notes and experiment results table
+
+---
 
 ## Project structure
 
 ```
-.
-├── app.py                      # Gradio app + ML/XAI pipeline
+visig-explainer/
+├── app.py                      # Gradio UI + ML / XAI pipeline
 ├── requirements.txt            # Python dependencies
-├── README.md                   # This file
+├── README.md                   # Project documentation
 ├── .gitignore
 └── ResNet18_Test_Images/
-    ├── Good_Cases/             # 5 clear classification examples
-    └── Challenging_Cases/      # 5 harder/occlusion/context examples
+    ├── Good_Cases/             # Clear classification examples
+    └── Challenging_Cases/      # Occlusion, context, sketch cases
 ```
+
+---
 
 ## Requirements
 
-- Python 3.10+ recommended
-- CPU is supported (GPU optional; app defaults to CPU)
-- ~2 GB free disk space for PyTorch + torchvision weights
+- Python 3.10+
+- CPU supported (app runs on CPU by default)
+- ~2 GB disk space for PyTorch and torchvision weights
+
+---
 
 ## Setup
 
-From this repository root:
+From the repository root:
 
 ```bash
 python -m venv .venv
@@ -52,92 +62,106 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+---
+
 ## Run locally
 
 ```bash
 python app.py
 ```
 
-Open the URL shown in the terminal (default: http://127.0.0.1:7860).
+Open **http://127.0.0.1:7860** in your browser.
 
-### Temporary public link (demo / viva)
+### Temporary public demo link
 
-Change the launch line in `app.py` to:
+In `app.py`, change the launch line to:
 
 ```python
 demo.launch(share=True)
 ```
 
-Gradio will print a temporary public `gradio.live` URL.
+Gradio will print a temporary public URL (useful for viva / remote demo).
 
-## How to use the app
+---
+
+## How to use
 
 1. Open the **Explain Image** tab.
-2. Upload an image or pick a sample from **Good Cases** / **Challenging Cases**.
+2. Upload an image or select a bundled test case.
 3. Choose a **Baseline** (Black / Gray / White).
 4. Set **Integration Steps (`n_steps`)** — default `50`.
-5. Optionally enable **Blur input image** to blur before ResNet18/IG.
+5. Optionally enable **Blur input image**.
 6. Click **Explain / Classify**.
-7. Inspect:
-   - Predicted class and confidence
-   - Top 5 predictions
-   - IG convergence **delta**
-   - Model input, heatmap, and overlay
+7. Review prediction, top-5 classes, convergence **delta**, heatmap, and overlay.
 
-Use the **Compare Baselines** tab to view all three baselines on one image.
+Use **Compare Baselines** to see all three baselines side by side.
 
-## Technical pipeline
+---
+
+## Pipeline
 
 ```
 Upload image
     ↓
-(Optional) blur input image
+(Optional) blur input
     ↓
 torchvision preprocess (ImageNet)
     ↓
 Pretrained ResNet18 → prediction + confidence
     ↓
-Solid-color RGB baseline → same preprocess
+RGB baseline → same preprocess
     ↓
-Captum Integrated Gradients (n_steps, return_convergence_delta=True)
+Captum Integrated Gradients (n_steps, convergence delta)
     ↓
 Attribution map → heatmap + overlay
     ↓
 Gradio UI
 ```
 
-## Key XAI concepts (viva notes)
+---
+
+## Key concepts (viva)
 
 | Term | Meaning |
 |------|---------|
 | **Baseline** | Reference input IG integrates from (black / gray / white) |
-| **`n_steps`** | Number of interpolation points in the IG Riemann sum |
-| **Delta** | Captum completeness/convergence error for the IG estimate |
-| **Input features** | Image pixels/channels — not `n_steps` or delta |
-| **Attribution map** | Per-pixel contribution toward the selected class logit |
+| **`n_steps`** | Interpolation points in the IG Riemann sum |
+| **Delta** | Captum completeness / convergence error |
+| **Input features** | Image pixels — not `n_steps` or delta |
+| **Attribution map** | Per-pixel contribution toward the predicted class |
 
-Try the same image with `n_steps = 10, 50, 100, 200` and compare **delta** and heatmaps.
+Try `n_steps = 10, 50, 100, 200` on the same image and compare delta and heatmaps.
+
+---
 
 ## Deploy on Hugging Face Spaces
 
-1. Create a new Space with SDK **Gradio**.
-2. Upload `app.py`, `requirements.txt`, and `ResNet18_Test_Images/`.
-3. Use **CPU Basic** hardware (free tier).
-4. Prefer moderate `n_steps` (25–50) on CPU for faster responses.
+1. Create a Space with SDK **Gradio**.
+2. Connect this repo or upload:
+   - `app.py`
+   - `requirements.txt`
+   - `ResNet18_Test_Images/`
+3. Select **CPU Basic** (free tier).
+4. Use moderate `n_steps` (25–50) on CPU for faster responses.
 
-Space file layout:
+---
 
+## Push to GitHub (quick reference)
+
+```bash
+cd path/to/this/repo
+git remote add origin https://github.com/YOUR_USERNAME/visig-explainer.git
+git push -u origin main
 ```
-app.py
-requirements.txt
-README.md
-ResNet18_Test_Images/
-```
 
-## Test images (bundled)
+Create the GitHub repo **empty** (no README / .gitignore) before pushing.
 
-| Case | File | Notes |
-|------|------|-------|
+---
+
+## Bundled test images
+
+| Set | File | Notes |
+|-----|------|-------|
 | Good | `good_01_dog.jpg` | Clear dog |
 | Good | `good_02_elephant.jpg` | Clear elephant |
 | Good | `good_03_car.jpg` | Clear car |
@@ -149,17 +173,25 @@ ResNet18_Test_Images/
 | Challenging | `challenge_04_toy_car.jpg` | Toy vs real |
 | Challenging | `challenge_05_sketch_elephant.jpg` | Sketch |
 
-## Libraries
+---
 
-- [PyTorch](https://pytorch.org/) + [torchvision](https://pytorch.org/vision/) — ResNet18
-- [Captum](https://captum.ai/) — Integrated Gradients
-- [Gradio](https://gradio.app/) — UI
-- PIL, NumPy, Matplotlib — image handling and plots
+## Tech stack
+
+| Library | Role |
+|---------|------|
+| [PyTorch](https://pytorch.org/) + [torchvision](https://pytorch.org/vision/) | ResNet18 inference |
+| [Captum](https://captum.ai/) | Integrated Gradients |
+| [Gradio](https://gradio.app/) | Web UI |
+| PIL, NumPy, Matplotlib | Images and plots |
+
+---
 
 ## License
 
-Course / educational use. Add a license file if required by your institution.
+Educational / coursework use. Add an institutional license if required.
+
+---
 
 ## Author
 
-Explainable AI — Experiment 5
+Explainable AI coursework — **VisIG Explainer**

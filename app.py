@@ -17,6 +17,13 @@ APP_DIR = Path(__file__).resolve().parent
 TEST_IMAGE_ROOT = APP_DIR / "ResNet18_Test_Images"
 IMAGE_SIZE = 224
 
+# Project identity (UI, docs, deployment)
+PROJECT_NAME = "VisIG Explainer"
+PROJECT_TAGLINE = (
+    "Interactive image classification and pixel-level attribution using "
+    "pretrained ResNet18 and Captum Integrated Gradients."
+)
+
 BASELINE_COLORS = {
     "black": (0, 0, 0),
     "gray": (128, 128, 128),
@@ -779,8 +786,10 @@ def on_refresh_results():
 # Course notes markdown
 # -----------------------------------------------------------------------------
 
-ANALYSIS_MARKDOWN = """
-# Experiment 5: Explainable AI with ResNet18 and Integrated Gradients
+ANALYSIS_MARKDOWN = f"""
+# {PROJECT_NAME}
+
+{PROJECT_TAGLINE}
 
 ## About ResNet18
 
@@ -788,7 +797,7 @@ ResNet18 is a convolutional neural network with 18 layers and residual (skip)
 connections. Residual connections help deeper networks train and represent
 features more effectively.
 
-In this experiment we use **pretrained ImageNet-1K weights** from torchvision.
+In this project we use **pretrained ImageNet-1K weights** from torchvision.
 ImageNet-1K contains **1000 object categories**. The model has already learned
 general visual features from a large dataset.
 
@@ -823,7 +832,7 @@ A **baseline** (reference input) represents a neutral starting point. Integrated
 Gradients requires this reference because attribution is measured relative to
 that starting point.
 
-In this experiment we use three solid-color RGB baselines:
+In this project we use three solid-color RGB baselines:
 
 | Baseline | RGB Color | Role |
 |----------|-----------|------|
@@ -867,10 +876,11 @@ def build_ui():
     load_model()
 
     with gr.Blocks(
-        title="Experiment 5: ResNet18 + Integrated Gradients",
+        title=f"{PROJECT_NAME} | ResNet18 + Integrated Gradients",
     ) as demo:
         gr.Markdown(
-            "# Experiment 5: ResNet18 + Integrated Gradients\n"
+            f"# {PROJECT_NAME}\n"
+            f"{PROJECT_TAGLINE}\n\n"
             "Upload an image, choose a baseline, and inspect model predictions "
             "with Captum Integrated Gradients explanations."
         )
